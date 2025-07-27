@@ -1,3 +1,19 @@
+import { Button } from '@/components/ui/button'
+import React from 'react'
+
+const Home = () => {
+  return (
+    <div flex="true" flex-row="true">
+      <div>Home</div>
+      <Button>Submit</Button>
+      </div>
+  )
+}
+
+export default Home
+
+/*
+
 import Image from "next/image";
 
 export default function Home() {
@@ -101,3 +117,4 @@ export default function Home() {
     </div>
   );
 }
+*/
