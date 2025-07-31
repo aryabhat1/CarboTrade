@@ -33,6 +33,8 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa";
 import Link from "next/link";
 import { WEBSITE_LOGIN, WEBSITE_REGISTER } from "@/routes/WebsiteRoute";
+import axios from "axios";
+import { showToast } from "@/lib/showToast";
 
 const RegisterPage = () => {
     const [loading, setLoading] = useState(false);
@@ -63,7 +65,23 @@ const RegisterPage = () => {
     });
 
     const handleRegisterSubmit = async (values) => {
-        console.log("The values are", values);
+        // console.log("The values are", values);
+        try {
+            setLoading(true);
+            const { data: registerResponse } = await axios.post(
+                "/api/auth/register",
+                values
+            );
+            if (!registerResponse.success) {
+                throw new Error(registerResponse.message);
+            }
+            form.reset();
+            showToast("success", registerResponse.message);
+        } catch (error) {
+            showToast("error", registerResponse.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -88,7 +106,7 @@ const RegisterPage = () => {
                     <Form {...form}>
                         <form
                             onSubmit={form.handleSubmit(handleRegisterSubmit)}
-                            // className="space-y-8"
+                            className="space-y-8"
                         >
                             <div className="mb-5">
                                 <FormField
@@ -100,7 +118,7 @@ const RegisterPage = () => {
                                             <FormControl>
                                                 <Input
                                                     type="text"
-                                                    placeholder="username"
+                                                    placeholder="your name"
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -123,7 +141,7 @@ const RegisterPage = () => {
                                             <FormControl>
                                                 <Input
                                                     type="email"
-                                                    placeholder="dummymail@dummymail.com"
+                                                    placeholder="name@dummymail.com"
                                                     {...field}
                                                 />
                                             </FormControl>

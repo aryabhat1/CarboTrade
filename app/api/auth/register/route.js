@@ -1,7 +1,12 @@
+// "use server";
+
+import { emailVerificationLink } from "@/email/emailVerificationLink";
 import { connectDB } from "@/lib/databaseConnection";
+import { catchError, response } from "@/lib/helperFunction";
+import { sendMail } from "@/lib/sendMail";
 import { zSchema } from "@/lib/zodSchema";
 import UserModel from "@/models/User.model";
-import { NextResponse } from "next/server";
+import { SignJWT } from "jose";
 
 export async function POST(request) {
     try {
@@ -37,5 +42,42 @@ export async function POST(request) {
                 validatedData.error
             );
         }
-    } catch (error) {}
+
+        // new registration
+
+        const NewRegistration = new UserModel({
+            name,
+            email,
+            password,
+        });
+
+        await NewRegistration.save();
+        // console.log("New Registration ID", NewRegistration._Id);
+
+        const secret = new TextEncoder().encode(process.env.SECRET_KEY);
+        const token = await new SignJWT({
+            userId: NewRegistration._id.toString(),
+        })
+            .setIssuedAt()
+            .setExpirationTime("1h")
+            .setProtectedHeader({ alg: "HS256" })
+            .sign(secret);
+
+        // console.log("userid", userId);
+
+        await sendMail(
+            "Email Verification send from Solvra.",
+            email,
+            emailVerificationLink(
+                `${process.env.NEXT_PUBLIC_BASE_URL}/auth/verify-email/${token}`
+            )
+        );
+        return response(
+            true,
+            200,
+            "Registration success, please verify your email address."
+        );
+    } catch (error) {
+        catchError(error);
+    }
 }
